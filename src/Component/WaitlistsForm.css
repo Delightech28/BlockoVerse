@@ -1,0 +1,64 @@
+/* Dark Mode Styling for Waitlist Form */
+body {
+    background-color: #121212;
+    color: #e0e0e0;
+    font-family: 'Poppins', sans-serif;
+  }
+  
+  .container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  
+  form {
+    background: #1a1a1a;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+  }
+  
+  h2 {
+    color: #00d1ff;
+    margin-bottom: 1rem;
+  }
+  
+  input[type="email"] {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: none;
+    border-radius: 5px;
+    background: #333;
+    color: #fff;
+  }
+  
+  button {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 5px;
+    background: linear-gradient(90deg, #00d1ff, #00ff9f);
+    color: #121212;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+    box-shadow: 0 0 10px rgba(0, 209, 255, 0.7);
+}
+
+button:hover {
+    background: linear-gradient(90deg, #00ff9f, #00d1ff);
+    box-shadow: 0 0 15px rgba(0, 255, 159, 0.9);
+}
+
+  
+  @media (max-width: 768px) {
+    .container {
+      padding: 20px;
+    }
+  }
+  

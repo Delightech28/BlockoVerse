@@ -5,10 +5,12 @@ export default defineConfig({
   plugins: [react()],
   server: {
     host: true, // Allows access from any network
-    port: process.env.PORT || 5173, // Uses Render's assigned port
+    port: process.env.PORT || 5173,
+    allowedHosts: ['blockoverse.onrender.com'], // Allow Render domain
   },
   preview: {
-    host: true, // Exposes the preview
+    host: true,
     port: process.env.PORT || 4173,
+    allowedHosts: ['blockoverse.onrender.com'], // Allow Render domain
   },
 });

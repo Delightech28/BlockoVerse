@@ -9,7 +9,6 @@ import "./WaitlistsForm.css";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
-
 const generateReferralCode = () => {
   return Math.random().toString(36).substring(2, 8).toUpperCase();
 };
@@ -41,7 +40,7 @@ const hashEmail = (email) => {
 const WaitlistForm = () => {
   const [email, setEmail] = useState("");
   const [referrerEmail, setReferrerEmail] = useState(null);
-  const [error, setError] = useState("");
+  //const [error, setError] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -72,7 +71,7 @@ const WaitlistForm = () => {
       const userSnapshot = await getDocs(userQuery);
 
       if (!userSnapshot.empty) {
-        setError("You are already registered! Redirecting to dashboard...");
+      //  setError("You are already registered! Redirecting to dashboard...");
         toast.warning("⚠️ You are already registered! Redirecting to dashboard...", {
           position: "top-right",
           autoClose: 3000,
@@ -120,7 +119,7 @@ const WaitlistForm = () => {
       }, 2000);
     } catch (error) {
       console.error("Error adding user:", error);
-      setError("An error occurred. Please try again.");
+     // setError("An error occurred. Please try again.");
       toast.error("❌ An error occurred. Please try again.", {
         position: "top-right",
         autoClose: 3000,
@@ -130,6 +129,7 @@ const WaitlistForm = () => {
   };
 
   return (
+
     <div className="waitlist-container d-flex justify-content-center align-items-center vh-100">
       <div className="waitlist-card p-4">
         <h2 className="text-center mb-4">🚀 Join the Web3 Waitlist</h2>
@@ -146,7 +146,7 @@ const WaitlistForm = () => {
               required 
             />
           </div>
-          <button type="submit" className="btn btn-glow w-100">Join the Waitlist</button>
+          <button type="submit" className="waitlist-button btn btn-glow w-100">Join the Waitlist</button>
         </form>
       </div>
 

@@ -4,7 +4,7 @@ import { collection, query, where, getDocs, doc, updateDoc } from "firebase/fire
 import { useNavigate } from "react-router-dom";  
 import Leaderboard from "./Leaderboard";  
 import ReferralSection from "./ReferralSection";  
-
+import NavBar from "./NavBar";
 function Dashboard() {  
   const [user, setUser] = useState(null);  
   const [loading, setLoading] = useState(true);  
@@ -105,6 +105,7 @@ function Dashboard() {
 
   return (  
     <>  
+    <NavBar/>
       <div>  
         <h2>Welcome to the Dashboard</h2>  
         {user ? (  

@@ -5,7 +5,7 @@ body {
     font-family: 'Poppins', sans-serif;
   }
   
-  .container {
+  .waitlist-container {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -37,7 +37,7 @@ body {
     color: #fff;
   }
   
-  button {
+  .waitlist-button {
     width: 100%;
     padding: 12px;
     border: none;

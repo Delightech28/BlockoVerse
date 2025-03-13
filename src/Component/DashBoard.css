@@ -1,0 +1,40 @@
+.dashboard-container {
+    text-align: center;
+    margin-top: 120px; /* Push content below navbar */
+    padding: 20px;
+  }
+  
+  .dashboard-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px; /* Space between elements */
+  }
+  
+  .points-text {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #ff5722;
+  }
+  
+  .check-in-btn {
+    padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    transition: all 0.3s ease-in-out;
+    cursor: pointer;
+  }
+  
+  .check-in-btn.inactive {
+    background-color: grey;
+    color: white;
+    cursor: not-allowed;
+  }
+  
+  .check-in-btn.active {
+    background: linear-gradient(90deg, #ff7e5f, #feb47b);
+    color: white;
+    font-weight: bold;
+  }
+  

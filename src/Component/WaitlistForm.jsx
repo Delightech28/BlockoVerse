@@ -1,28 +1,30 @@
-import React from 'react';
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { db } from "../firebase";
-import { collection, addDoc, getDocs, query, where, updateDoc } from "firebase/firestore";
+import { collection, addDoc, getDocs, query, where } from "firebase/firestore";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 import emailjs from "emailjs-com";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./WaitlistsForm.css";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { ToastContainer } from "react-toastify";
+
+// Generate a unique referral code
 const generateReferralCode = () => {
   return Math.random().toString(36).substring(2, 8).toUpperCase();
 };
 
+// Send verification email
 const sendVerificationEmail = (userEmail, verificationCode) => {
   emailjs
     .send(
-      "service_0lhshzb",
-      "template_uuo7oj9",
+      import.meta.env.VITE_EMAILJS_SERVICE_ID,
+      import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
       {
         user_email: userEmail,
         verification_code: verificationCode,
       },
-      "xbyQZEcbAdxv2VNRC"
+      import.meta.env.VITE_EMAILJS_USER_ID
     )
     .then((response) => {
       console.log("Email sent successfully:", response);
@@ -32,6 +34,7 @@ const sendVerificationEmail = (userEmail, verificationCode) => {
     });
 };
 
+// Mask referrer email
 const hashEmail = (email) => {
   const [name, domain] = email.split("@");
   return name.slice(0, 3) + "****@" + domain;
@@ -40,9 +43,20 @@ const hashEmail = (email) => {
 const WaitlistForm = () => {
   const [email, setEmail] = useState("");
   const [referrerEmail, setReferrerEmail] = useState(null);
-  //const [error, setError] = useState("");
   const navigate = useNavigate();
+  const auth = getAuth();
 
+  // Detect logged-in user and auto-fill email
+  useEffect(() => {
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setEmail(user.email);
+        localStorage.setItem("userEmail", user.email);
+      }
+    });
+  }, []);
+
+  // Fetch referrer if referral code exists
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const refCode = params.get("ref");
@@ -62,8 +76,18 @@ const WaitlistForm = () => {
     }
   }, []);
 
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!email) {
+      toast.warning("⚠️ Please enter a valid email address!", {
+        position: "top-right",
+        autoClose: 3000,
+        theme: "colored",
+      });
+      return;
+    }
 
     try {
       const usersRef = collection(db, "users");
@@ -71,12 +95,12 @@ const WaitlistForm = () => {
       const userSnapshot = await getDocs(userQuery);
 
       if (!userSnapshot.empty) {
-      //  setError("You are already registered! Redirecting to dashboard...");
         toast.warning("⚠️ You are already registered! Redirecting to dashboard...", {
           position: "top-right",
           autoClose: 3000,
           theme: "colored",
         });
+
         setTimeout(() => {
           navigate(`/dashboard?email=${encodeURIComponent(email)}`);
         }, 2000);
@@ -93,20 +117,10 @@ const WaitlistForm = () => {
         referralCount: 0,
         verificationCode: verificationCode,
         verified: false,
+        points: 0,
       });
 
       sendVerificationEmail(email, verificationCode);
-
-      if (referrerEmail) {
-        const referrerQuery = query(usersRef, where("email", "==", referrerEmail));
-        const referrerSnapshot = await getDocs(referrerQuery);
-        if (!referrerSnapshot.empty) {
-          const referrerDoc = referrerSnapshot.docs[0];
-          await updateDoc(referrerDoc.ref, {
-            referralCount: referrerDoc.data().referralCount + 1,
-          });
-        }
-      }
 
       toast.success("🎉 Success! You have joined the waitlist. Check your email for verification.", {
         position: "top-right",
@@ -119,7 +133,6 @@ const WaitlistForm = () => {
       }, 2000);
     } catch (error) {
       console.error("Error adding user:", error);
-     // setError("An error occurred. Please try again.");
       toast.error("❌ An error occurred. Please try again.", {
         position: "top-right",
         autoClose: 3000,
@@ -129,28 +142,26 @@ const WaitlistForm = () => {
   };
 
   return (
-
     <div className="waitlist-container d-flex justify-content-center align-items-center vh-100">
       <div className="waitlist-card p-4">
         <h2 className="text-center mb-4">🚀 Join the Web3 Waitlist</h2>
         {referrerEmail && <p className="text-light">You're signing up with referral from: {hashEmail(referrerEmail)}</p>}
-        {/* {error && <p className="text-danger text-center">{error}</p>} */}
         <form onSubmit={handleSubmit}>
           <div className="mb-3">
-            <input 
-              type="email" 
-              name="email" 
-              className="form-control input-glow" 
-              placeholder="Enter your email" 
-              onChange={(e) => setEmail(e.target.value)} 
-              required 
+            <input
+              type="email"
+              name="email"
+              className="form-control input-glow"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              disabled={email !== ""} // Prevents manual input if auto-filled
             />
           </div>
           <button type="submit" className="waitlist-button btn btn-glow w-100">Join the Waitlist</button>
         </form>
       </div>
-
-      {/* Toast Container (Needed for displaying toast notifications) */}
       <ToastContainer />
     </div>
   );

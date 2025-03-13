@@ -1,0 +1,78 @@
+/* Dark Background for the Entire Page */
+body {
+    background: black;
+    margin: 0;
+    font-family: Arial, sans-serif;
+  }
+  
+  .verify-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: #1a1a1a; /* Dark gray background */
+  }
+  
+  .verify-box {
+    background: #222;
+    padding: 30px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+    width: 350px;
+    color: white;
+  }
+  
+  h2 {
+    margin-bottom: 15px;
+    font-size: 24px;
+    color: #fff;
+  }
+  
+  .email-text {
+    font-size: 14px;
+    color: #bbb;
+    margin-bottom: 20px;
+  }
+  
+  .code-input-container {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  
+  .code-input {
+    width: 45px;
+    height: 50px;
+    text-align: center;
+    font-size: 22px;
+    border: 2px solid #444;
+    border-radius: 5px;
+    outline: none;
+    background: #333;
+    color: white;
+    transition: all 0.3s ease;
+  }
+  
+  .code-input:focus {
+    border-color: #00ff9f;
+  }
+  
+  .verify-btn {
+    background: linear-gradient(90deg, #00d1ff, #00ff9f);
+    color: white;
+    border: none;
+    padding: 12px 15px;
+    font-size: 18px;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.3s ease;
+    font-weight: bold;
+  }
+  
+  .verify-btn:hover {
+    opacity: 0.9;
+  }
+  

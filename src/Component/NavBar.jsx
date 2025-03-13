@@ -36,8 +36,8 @@ const NavBar = () => {
         <div className={`collapse navbar-collapse ${isOpen ? "show" : ""}`}>
           <ul className="navbar-nav ms-auto">
             <li className="nav-item">
-              <Link className="nav-link" to="/home" onClick={closeMenu}>Home</Link>
-            </li>
+            <Link className="nav-link" to="/dashboard" onClick={closeMenu}>Home</Link>
+          </li>
             <li className="nav-item">
               <Link className="nav-link" to="/tasks" onClick={closeMenu}>Tasks</Link>
             </li>

@@ -1,170 +1,137 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { db } from "../firebase";
-import { collection, addDoc, getDocs, query, where } from "firebase/firestore";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
-import emailjs from "emailjs-com";
-import "bootstrap/dist/css/bootstrap.min.css";
-import "./WaitlistsForm.css";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import React, { useEffect, useState } from "react";  
+import { db } from "../firebase";  
+import { collection, query, where, getDocs, doc, updateDoc } from "firebase/firestore";  
+import { useNavigate } from "react-router-dom";  
+import Leaderboard from "./Leaderboard";  
+import ReferralSection from "./ReferralSection";  
+import NavBar from "./NavBar";
+import './DashBoard.css'
 
-// Generate a unique referral code
-const generateReferralCode = () => {
-  return Math.random().toString(36).substring(2, 8).toUpperCase();
-};
+function Dashboard() {  
+  const [user, setUser] = useState(null);  
+  const [loading, setLoading] = useState(true);  
+  const [points, setPoints] = useState(0);  
+  const [lastCheckIn, setLastCheckIn] = useState(null);  
+  const [countdown, setCountdown] = useState("00:00:00");  
+  const navigate = useNavigate();  
 
-// Send verification email
-const sendVerificationEmail = (userEmail, verificationCode) => {
-  emailjs
-    .send(
-      import.meta.env.VITE_EMAILJS_SERVICE_ID,
-      import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
-      {
-        user_email: userEmail,
-        verification_code: verificationCode,
-      },
-      import.meta.env.VITE_EMAILJS_USER_ID
-    )
-    .then((response) => {
-      console.log("Email sent successfully:", response);
-    })
-    .catch((error) => {
-      console.error("Error sending email:", error);
-    });
-};
+  useEffect(() => {  
+    const fetchUser = async () => {  
+      const params = new URLSearchParams(window.location.search);  
+      const email = params.get("email") || localStorage.getItem("userEmail");  
 
-// Mask referrer email
-const hashEmail = (email) => {
-  const [name, domain] = email.split("@");
-  return name.slice(0, 3) + "****@" + domain;
-};
+      if (!email) {  
+        alert("No email found, redirecting...");  
+        navigate("/register");  
+        return;  
+      }  
 
-const WaitlistForm = () => {
-  const [email, setEmail] = useState("");
-  const [referrerEmail, setReferrerEmail] = useState(null);
-  const navigate = useNavigate();
-  const auth = getAuth();
+      try {  
+        const q = query(collection(db, "users"), where("email", "==", email));  
+        const querySnapshot = await getDocs(q);  
 
-  // Detect logged-in user and auto-fill email
-  useEffect(() => {
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setEmail(user.email);
-        localStorage.setItem("userEmail", user.email);
-      }
-    });
-  }, []);
+        if (!querySnapshot.empty) {  
+          const userData = querySnapshot.docs[0].data();  
+          const userId = querySnapshot.docs[0].id;  
 
-  // Fetch referrer if referral code exists
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const refCode = params.get("ref");
+          if (!userData.verified) {  
+            alert("User not verified. Redirecting...");  
+            navigate("/verify?email=" + email);  
+          } else {  
+            setUser({ ...userData, id: userId });  
+            setPoints(userData.points || 0);  
+            setLastCheckIn(userData.lastCheckIn || null);  
 
-    if (refCode) {
-      const fetchReferrer = async () => {
-        const usersRef = collection(db, "users");
-        const refQuery = query(usersRef, where("referralCode", "==", refCode));
-        const refSnapshot = await getDocs(refQuery);
+            // ✅ Save email in localStorage
+            localStorage.setItem("userEmail", email);
+          }  
+        } else {  
+          alert("User not found, redirecting...");  
+          navigate("/register");  
+        }  
+      } catch (error) {  
+        console.error("Error fetching user:", error);  
+      } finally {  
+        setLoading(false);  
+      }  
+    };  
+    fetchUser();  
+  }, [navigate]);  
 
-        if (!refSnapshot.empty) {
-          const referrerData = refSnapshot.docs[0].data();
-          setReferrerEmail(referrerData.email);
-        }
-      };
-      fetchReferrer();
-    }
-  }, []);
+  useEffect(() => {  
+    if (lastCheckIn) {  
+      const interval = setInterval(() => {  
+        const now = new Date().getTime();  
+        const nextCheckIn = new Date(lastCheckIn).getTime() + 24 * 60 * 60 * 1000;  
+        const diff = nextCheckIn - now;  
 
-  // Handle form submission
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+        if (diff > 0) {  
+          const hours = Math.floor(diff / (1000 * 60 * 60));  
+          const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));  
+          const seconds = Math.floor((diff % (1000 * 60)) / 1000);  
+          setCountdown(`${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);  
+        } else {  
+          setCountdown("00:00:00");  
+        }  
+      }, 1000);  
 
-    if (!email) {
-      toast.warning("⚠️ Please enter a valid email address!", {
-        position: "top-right",
-        autoClose: 3000,
-        theme: "colored",
-      });
-      return;
-    }
+      return () => clearInterval(interval);  
+    }  
+  }, [lastCheckIn]);  
 
-    try {
-      const usersRef = collection(db, "users");
-      const userQuery = query(usersRef, where("email", "==", email));
-      const userSnapshot = await getDocs(userQuery);
+  const handleCheckIn = async () => {  
+    const now = new Date().getTime();  
+    const nextCheckIn = lastCheckIn ? new Date(lastCheckIn).getTime() + 24 * 60 * 60 * 1000 : 0;  
 
-      if (!userSnapshot.empty) {
-        toast.warning("⚠️ You are already registered! Redirecting to dashboard...", {
-          position: "top-right",
-          autoClose: 3000,
-          theme: "colored",
-        });
+    if (now < nextCheckIn) {  
+      alert("You can check in again after the countdown ends.");  
+      return;  
+    }  
 
-        setTimeout(() => {
-          navigate(`/dashboard?email=${encodeURIComponent(email)}`);
-        }, 2000);
-        return;
-      }
+    try {  
+      const userRef = doc(db, "users", user.id);  
+      await updateDoc(userRef, {  
+        points: points + 5,  
+        lastCheckIn: new Date().toISOString()  
+      });  
 
-      const userReferralCode = generateReferralCode();
-      const verificationCode = Math.floor(100000 + Math.random() * 900000);
+      setPoints(prevPoints => prevPoints + 5);  
+      setLastCheckIn(new Date().toISOString());  
+      alert("Check-in successful! +5 points added.");  
+    } catch (error) {  
+      console.error("Error updating check-in:", error);  
+    }  
+  };  
 
-      await addDoc(usersRef, {
-        email: email,
-        referralCode: userReferralCode,
-        referredBy: referrerEmail ? hashEmail(referrerEmail) : null,
-        referralCount: 0,
-        verificationCode: verificationCode,
-        verified: false,
-        points: 0,
-      });
+  if (loading) return <p>Loading...</p>;  
 
-      sendVerificationEmail(email, verificationCode);
-
-      toast.success("🎉 Success! You have joined the waitlist. Check your email for verification.", {
-        position: "top-right",
-        autoClose: 3000,
-        theme: "colored",
-      });
-
-      setTimeout(() => {
-        navigate(`/verify?email=${encodeURIComponent(email)}`);
-      }, 2000);
-    } catch (error) {
-      console.error("Error adding user:", error);
-      toast.error("❌ An error occurred. Please try again.", {
-        position: "top-right",
-        autoClose: 3000,
-        theme: "colored",
-      });
-    }
-  };
-
-  return (
-    <div className="waitlist-container d-flex justify-content-center align-items-center vh-100">
-      <div className="waitlist-card p-4">
-        <h2 className="text-center mb-4">🚀 Join the Web3 Waitlist</h2>
-        {referrerEmail && <p className="text-light">You're signing up with referral from: {hashEmail(referrerEmail)}</p>}
-        <form onSubmit={handleSubmit}>
-          <div className="mb-3">
-            <input
-              type="email"
-              name="email"
-              className="form-control input-glow"
-              placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              disabled={email !== ""} // Prevents manual input if auto-filled
-            />
-          </div>
-          <button type="submit" className="waitlist-button btn btn-glow w-100">Join the Waitlist</button>
-        </form>
-      </div>
-      <ToastContainer />
-    </div>
+  return (  
+    <>  
+      <NavBar user={user} />
+      <div className="dashboard-container">
+        <h2>Claim & Earn Hub</h2>  
+        {user ? (  
+          <div className="dashboard-content">
+            <p><strong>Email:</strong> {user.email}</p>  
+            <p><strong>Points:</strong> <span className="points-text">{points}</span></p>  
+            
+            {/* ✅ Check-in button added back */}
+            <button 
+              className={`check-in-btn ${countdown === "00:00:00" ? "active" : "inactive"}`} 
+              onClick={handleCheckIn} 
+              disabled={countdown !== "00:00:00"}
+            >  
+              {countdown === "00:00:00" ? "Check In" : `Next Check-in: ${countdown}`}  
+            </button>  
+          </div>  
+        ) : (  
+          <p>No user data found.</p>  
+        )}  
+      </div>  
+      <ReferralSection user={user} />  
+      <Leaderboard/>  
+    </>  
   );
-};
+}  
 
-export default WaitlistForm;
+export default Dashboard;

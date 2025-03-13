@@ -1,14 +1,13 @@
-import React from 'react';
-
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { db } from "../firebase";
 import { doc, getDoc } from "firebase/firestore";
 
 function ReferralSection({ user }) {
   const [referralLink, setReferralLink] = useState("");
+  const [referralCount, setReferralCount] = useState(0);
 
   useEffect(() => {
-    const fetchReferralLink = async () => {
+    const fetchReferralData = async () => {
       if (user && user.id) {
         try {
           const userRef = doc(db, "users", user.id);
@@ -18,13 +17,14 @@ function ReferralSection({ user }) {
             const userData = userSnap.data();
             const refCode = userData.referralCode || "";
             setReferralLink(`${window.location.origin}/signup?ref=${refCode}`);
+            setReferralCount(userData.referralCount || 0);
           }
         } catch (error) {
-          console.error("Error fetching referral link:", error);
+          console.error("Error fetching referral data:", error);
         }
       }
     };
-    fetchReferralLink();
+    fetchReferralData();
   }, [user]);
 
   const copyToClipboard = () => {
@@ -38,6 +38,7 @@ function ReferralSection({ user }) {
   return (
     <div>
       <h3>Referral Program</h3>
+      {user && <p><strong>Referral Count:</strong> {referralCount}</p>}
       {referralLink ? (
         <>
           <p>Your Referral Link:</p>

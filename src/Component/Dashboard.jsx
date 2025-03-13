@@ -113,6 +113,7 @@ function Dashboard() {
         {user ? (  
           <div className="dashboard-content">
             <p><strong>Email:</strong> {user.email}</p>  
+
             <p><strong>Points:</strong> <span className="points-text">{points}</span></p>  
             
             {/* ✅ Check-in button added back */}

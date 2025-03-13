@@ -1,3 +1,4 @@
+
 /* Dark Background for the Entire Page */
 body {
     background: black;
@@ -75,4 +76,3 @@ body {
   .verify-btn:hover {
     opacity: 0.9;
   }
-  

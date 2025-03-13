@@ -5,13 +5,14 @@ import { useNavigate } from "react-router-dom";
 import Leaderboard from "./Leaderboard";  
 import ReferralSection from "./ReferralSection";  
 import NavBar from "./NavBar";
+import './DashBoard.css'
+
 function Dashboard() {  
   const [user, setUser] = useState(null);  
   const [loading, setLoading] = useState(true);  
   const [points, setPoints] = useState(0);  
   const [lastCheckIn, setLastCheckIn] = useState(null);  
   const [countdown, setCountdown] = useState("00:00:00");  
-  const [referralLink, setReferralLink] = useState("");  
   const navigate = useNavigate();  
 
   useEffect(() => {  
@@ -40,7 +41,6 @@ function Dashboard() {
             setUser({ ...userData, id: userId });  
             setPoints(userData.points || 0);  
             setLastCheckIn(userData.lastCheckIn || null);  
-            setReferralLink(`${window.location.origin}/signup?ref=${userId}`);  
           }  
         } else {  
           alert("User not found, redirecting...");  
@@ -53,7 +53,6 @@ function Dashboard() {
       }  
     };  
     fetchUser();  
-
   }, [navigate]);  
 
   useEffect(() => {  
@@ -105,18 +104,20 @@ function Dashboard() {
 
   return (  
     <>  
-    <NavBar/>
-      <div>  
-        <h2>Welcome to the Dashboard</h2>  
+      <NavBar user={user} />
+      <div className="dashboard-container">
+        <h2>Claim & Earn Hub</h2>  
         {user ? (  
-          <div>  
+          <div className="dashboard-content">
             <p><strong>Email:</strong> {user.email}</p>  
-            <p><strong>Referral Count:</strong> {user.referralCount}</p>  
-            <p><strong>Points:</strong> {points}</p>  
-            <button onClick={handleCheckIn} disabled={countdown !== "00:00:00"}>  
+            <p><strong>Points:</strong> <span className="points-text">{points}</span></p>  
+            <button 
+              className={`check-in-btn ${countdown === "00:00:00" ? "active" : "inactive"}`} 
+              onClick={handleCheckIn} 
+              disabled={countdown !== "00:00:00"}
+            >  
               {countdown === "00:00:00" ? "Check In" : `Next Check-in: ${countdown}`}  
             </button>  
-            <p><strong>Referral Link:</strong> <a href={referralLink} target="_blank" rel="noopener noreferrer">{referralLink}</a></p>  
           </div>  
         ) : (  
           <p>No user data found.</p>  
@@ -125,7 +126,7 @@ function Dashboard() {
       <ReferralSection user={user} />  
       <Leaderboard/>  
     </>  
-  );  
+  );
 }  
 
 export default Dashboard;

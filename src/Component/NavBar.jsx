@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { FaUserCircle } from "react-icons/fa"; // Import user icon
 import "./NavBar.css";
 
 const NavBar = () => {
@@ -49,7 +50,13 @@ const NavBar = () => {
             <li className="nav-item">
               <Link className="nav-link" to="/nft" onClick={closeMenu}>NFT</Link>
             </li>
-            
+            {email && (
+              <li className="nav-item">
+                <Link className="nav-link" to="/profile" onClick={closeMenu}>
+                  <FaUserCircle size={20} style={{ marginRight: "5px" }} /> Profile
+                </Link>
+              </li>
+            )}
           </ul>
         </div>
       </div>

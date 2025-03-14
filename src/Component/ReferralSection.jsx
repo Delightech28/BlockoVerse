@@ -5,7 +5,7 @@ import { FaRegCopy } from "react-icons/fa"; // Copy icon
 import { FaWhatsapp, FaTelegramPlane, FaTwitter } from "react-icons/fa"; // Social Icons
 import { ToastContainer, toast } from "react-toastify"; // Toast notifications
 import "react-toastify/dist/ReactToastify.css"; // Toast styles
-
+import './ReferralSection.css';
 function ReferralSection({ user }) {
   const [referralLink, setReferralLink] = useState("");
   const [referralCount, setReferralCount] = useState(0);

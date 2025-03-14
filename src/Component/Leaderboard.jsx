@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { db } from "../firebase";
 import { collection, getDocs, query, where } from "firebase/firestore";
+import "./Leaderboard.css"; // Ensure this file contains necessary styling
 
 function Leaderboard() {
   const [topUsers, setTopUsers] = useState([]);
@@ -73,74 +74,60 @@ function Leaderboard() {
   if (loading) return <p>Loading leaderboard...</p>;
 
   return (
-    <div style={{ padding: "20px", textAlign: "center" }}>
-      <h2>🏆 Top Referrers</h2>
-      <table
-        style={{
-          width: "100%",
-          borderCollapse: "collapse",
-          marginTop: "20px",
-          backgroundColor: "#f8f9fa",
-        }}
-      >
-        <thead>
-          <tr style={{ backgroundColor: "#007bff", color: "white" }}>
-            <th style={{ padding: "10px", border: "1px solid #ddd" }}>Rank</th>
-            <th style={{ padding: "10px", border: "1px solid #ddd" }}>Email</th>
-            <th style={{ padding: "10px", border: "1px solid #ddd" }}>Referrals</th>
-          </tr>
-        </thead>
-        <tbody>
-          {topUsers.length > 0 ? (
-            topUsers.map((user, index) => (
-              <tr key={index} style={{ backgroundColor: index % 2 === 0 ? "#ffffff" : "#f1f1f1" }}>
-                <td style={{ padding: "10px", border: "1px solid #ddd" }}>{index + 1}</td>
-                <td style={{ padding: "10px", border: "1px solid #ddd" }}>{maskEmail(user.email)}</td>
-                <td style={{ padding: "10px", border: "1px solid #ddd" }}>{user.referralCount}</td>
-              </tr>
-            ))
-          ) : (
+    <div className="leaderboard-container">
+      <h2 className="text-primary">🏆 Top Referrers</h2>
+      <div className="table-responsive">
+        <table className="table table-striped table-bordered">
+          <thead className="table-primary">
             <tr>
-              <td colSpan="3" style={{ padding: "10px", border: "1px solid #ddd" }}>
-                No referrals yet.
-              </td>
+              <th>Rank</th>
+              <th>Email</th>
+              <th>Referrals</th>
             </tr>
-          )}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {topUsers.length > 0 ? (
+              topUsers.map((user, index) => (
+                <tr key={index}>
+                  <td>{index + 1}</td>
+                  <td>{maskEmail(user.email)}</td>
+                  <td>{user.referralCount}</td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="3">No referrals yet.</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
 
-      <h2 style={{ marginTop: "40px" }}>📜 Referral History</h2>
-      <table
-        style={{
-          width: "100%",
-          borderCollapse: "collapse",
-          marginTop: "20px",
-          backgroundColor: "#f8f9fa",
-        }}
-      >
-        <thead>
-          <tr style={{ backgroundColor: "#28a745", color: "white" }}>
-            <th style={{ padding: "10px", border: "1px solid #ddd" }}>Email</th>
-            <th style={{ padding: "10px", border: "1px solid #ddd" }}>Joined Date</th>
-          </tr>
-        </thead>
-        <tbody>
-          {referralHistory.length > 0 ? (
-            referralHistory.map((referral, index) => (
-              <tr key={index} style={{ backgroundColor: index % 2 === 0 ? "#ffffff" : "#f1f1f1" }}>
-                <td style={{ padding: "10px", border: "1px solid #ddd" }}>{maskEmail(referral.email)}</td>
-                <td style={{ padding: "10px", border: "1px solid #ddd" }}>{referral.joinedAt}</td>
-              </tr>
-            ))
-          ) : (
+      <h2 className="text-success mt-4">📜 Referral History</h2>
+      <div className="table-responsive">
+        <table className="table table-striped table-bordered">
+          <thead className="table-success">
             <tr>
-              <td colSpan="2" style={{ padding: "10px", border: "1px solid #ddd" }}>
-                No referrals found.
-              </td>
+              <th>Email</th>
+              <th>Joined Date</th>
             </tr>
-          )}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {referralHistory.length > 0 ? (
+              referralHistory.map((referral, index) => (
+                <tr key={index}>
+                  <td>{maskEmail(referral.email)}</td>
+                  <td>{referral.joinedAt}</td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="2">No referrals found.</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

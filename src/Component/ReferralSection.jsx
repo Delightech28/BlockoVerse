@@ -1,10 +1,24 @@
 import React, { useEffect, useState } from "react";
 import { db } from "../firebase";
 import { doc, getDoc } from "firebase/firestore";
+import { FaRegCopy } from "react-icons/fa"; // Copy icon
+import { FaWhatsapp, FaTelegramPlane, FaTwitter } from "react-icons/fa"; // Social Icons
+import { ToastContainer, toast } from "react-toastify"; // Toast notifications
+import "react-toastify/dist/ReactToastify.css"; // Toast styles
 
 function ReferralSection({ user }) {
   const [referralLink, setReferralLink] = useState("");
   const [referralCount, setReferralCount] = useState(0);
+
+  const shareText = `🌐 BlockoVerse – Unlock the Future of Web3! 🚀
+
+Step into a world of decentralized finance, exclusive rewards, and limitless opportunities. Earn free $BVERSE, collect rare NFTs, and be part of a thriving Web3 ecosystem.
+
+✅ Seamless & secure transactions
+✅ Exclusive early rewards for members
+✅ A dynamic community shaping the future
+
+🔗 Join now and claim your spot! ${referralLink}`; // Wrapped in quotes
 
   useEffect(() => {
     const fetchReferralData = async () => {
@@ -16,8 +30,8 @@ function ReferralSection({ user }) {
           if (userSnap.exists()) {
             const userData = userSnap.data();
             const refCode = userData.referralCode || "";
-            setReferralLink(`${window.location.origin}/signup?ref=${refCode}`);
-            setReferralCount(userData.referralCount || 0);
+            const link = `${window.location.origin}/signup?ref=${refCode}`;
+            setReferralLink(link);
           }
         } catch (error) {
           console.error("Error fetching referral data:", error);
@@ -28,31 +42,69 @@ function ReferralSection({ user }) {
   }, [user]);
 
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(referralLink).then(() => {
-      alert("Referral link copied to clipboard!");
-    }).catch(err => {
-      console.error("Failed to copy:", err);
-    });
+    navigator.clipboard.writeText(shareText)
+      .then(() => {
+        toast.success("Referral link copied to clipboard!", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+      })
+      .catch(err => {
+        console.error("Failed to copy:", err);
+        toast.error("Failed to copy link. Try again!");
+      });
   };
 
   return (
-    <div>
+    <div className="referral-container">
+      <ToastContainer /> {/* Toast container for notifications */}
       <h3>Referral Program</h3>
       {user && <p><strong>Referral Count:</strong> {referralCount}</p>}
       {referralLink ? (
         <>
           <p>Your Referral Link:</p>
-          <input type="text" value={referralLink} readOnly />
-          <button onClick={copyToClipboard}>Copy Referral Link</button>
-          <div>
-            <button onClick={() => window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(referralLink)}`, "_blank")}>
-              Share on WhatsApp
+          <div className="referral-input-container">
+            <input type="text" className="referral-input" value={referralLink} readOnly />
+            <FaRegCopy className="copy-icon" onClick={copyToClipboard} />
+          </div>
+
+          <div className="referral-buttons">
+            <button
+              onClick={() =>
+                window.open(
+                  `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`,
+                  "_blank"
+                )
+              }
+              className="share-btn"
+            >
+              <FaWhatsapp size={20} color="#25D366" /> 
             </button>
-            <button onClick={() => window.open(`https://t.me/share/url?url=${encodeURIComponent(referralLink)}`, "_blank")}>
-              Share on Telegram
+            <button
+              onClick={() =>
+                window.open(
+                  `https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent(shareText)}`,
+                  "_blank"
+                )
+              }
+              className="share-btn"
+            >
+              <FaTelegramPlane size={20} color="#0088cc" />
             </button>
-            <button onClick={() => window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(referralLink)}`, "_blank")}>
-              Share on Twitter
+            <button
+              onClick={() =>
+                window.open(
+                  `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`,
+                  "_blank"
+                )
+              }
+              className="share-btn"
+            >
+              <FaTwitter size={20} color="#1DA1F2" />
             </button>
           </div>
         </>

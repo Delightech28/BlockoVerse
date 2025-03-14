@@ -144,7 +144,7 @@ const WaitlistForm = () => {
   return (
     <div className="waitlist-container d-flex justify-content-center align-items-center vh-100">
       <div className="waitlist-card p-4">
-        <h2 className="text-center mb-4">🚀 Join the Web3 Waitlist</h2>
+        <h2 className="text-center mb-4">Join Now & Unlock Exclusive Rewards</h2>
         {referrerEmail && <p className="text-light">You're signing up with referral from: {hashEmail(referrerEmail)}</p>}
         <form onSubmit={handleSubmit}>
           <div className="mb-3">

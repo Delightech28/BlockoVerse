@@ -5,6 +5,8 @@ import { useNavigate } from "react-router-dom";
 import Leaderboard from "./Leaderboard";  
 import ReferralSection from "./ReferralSection";  
 import NavBar from "./NavBar";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import './DashBoard.css'
 
 function Dashboard() {  
@@ -21,7 +23,7 @@ function Dashboard() {
       const email = params.get("email") || localStorage.getItem("userEmail");  
 
       if (!email) {  
-        alert("No email found, redirecting...");  
+        toast.warning("⚠️ No email found, redirecting...", { autoClose: 3000, theme: "colored" });
         navigate("/register");  
         return;  
       }  
@@ -35,22 +37,21 @@ function Dashboard() {
           const userId = querySnapshot.docs[0].id;  
 
           if (!userData.verified) {  
-            alert("User not verified. Redirecting...");  
-            navigate("/verify?email=" + email);  
+            toast.error("❌ User not verified. Redirecting...", { autoClose: 3000, theme: "colored" });
+            navigate(`/verify?email=${email}`);  
           } else {  
             setUser({ ...userData, id: userId });  
             setPoints(userData.points || 0);  
             setLastCheckIn(userData.lastCheckIn || null);  
-
-            // ✅ Save email in localStorage
             localStorage.setItem("userEmail", email);
           }  
         } else {  
-          alert("User not found, redirecting...");  
+          toast.warning("⚠️ User not found, redirecting...", { autoClose: 3000, theme: "colored" });
           navigate("/register");  
         }  
       } catch (error) {  
         console.error("Error fetching user:", error);  
+        toast.error("❌ Error loading user data.", { autoClose: 3000, theme: "colored" });
       } finally {  
         setLoading(false);  
       }  
@@ -84,7 +85,7 @@ function Dashboard() {
     const nextCheckIn = lastCheckIn ? new Date(lastCheckIn).getTime() + 24 * 60 * 60 * 1000 : 0;  
 
     if (now < nextCheckIn) {  
-      alert("You can check in again after the countdown ends.");  
+      toast.warning("⏳ You can check in again after the countdown ends.", { autoClose: 3000, theme: "colored" });
       return;  
     }  
 
@@ -97,9 +98,10 @@ function Dashboard() {
 
       setPoints(prevPoints => prevPoints + 5);  
       setLastCheckIn(new Date().toISOString());  
-      alert("Check-in successful! +5 points added.");  
+      toast.success("🎉 Check-in successful! +5 points added.", { autoClose: 3000, theme: "colored" });
     } catch (error) {  
       console.error("Error updating check-in:", error);  
+      toast.error("❌ Check-in failed. Please try again.", { autoClose: 3000, theme: "colored" });
     }  
   };  
 
@@ -112,11 +114,9 @@ function Dashboard() {
         <h2>Claim & Earn Hub</h2>  
         {user ? (  
           <div className="dashboard-content">
-            <p><strong>Email:</strong> {user.email}</p>  
 
             <p><strong>Points:</strong> <span className="points-text">{points}</span></p>  
             
-            {/* ✅ Check-in button added back */}
             <button 
               className={`check-in-btn ${countdown === "00:00:00" ? "active" : "inactive"}`} 
               onClick={handleCheckIn} 
@@ -131,6 +131,7 @@ function Dashboard() {
       </div>  
       <ReferralSection user={user} />  
       <Leaderboard/>  
+      <ToastContainer />  
     </>  
   );
 }  

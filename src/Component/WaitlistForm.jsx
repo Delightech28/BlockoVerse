@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
+import { doc, getDocs, query, where, deleteDoc, collection, updateDoc, addDoc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { db } from "../firebase";
-import { collection, addDoc, getDocs, query, where } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import emailjs from "emailjs-com";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -80,6 +80,18 @@ const WaitlistForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    const params = new URLSearchParams(window.location.search);
+    const refCode = params.get("ref");
+
+    if (referrerEmail === null && refCode) {
+      toast.warning("Fetching referral information. Please wait.", {
+        position: "top-right",
+        autoClose: 2000,
+        theme: "colored",
+      });
+      return;
+    }
+
     if (!email) {
       toast.warning("⚠️ Please enter a valid email address!", {
         position: "top-right",
@@ -91,7 +103,7 @@ const WaitlistForm = () => {
 
     try {
       const usersRef = collection(db, "users");
-      const userQuery = query(usersRef, where("email", "==", email));
+      const userQuery = query(usersRef, where("email", "==", email.trim().toLowerCase()));
       const userSnapshot = await getDocs(userQuery);
 
       if (!userSnapshot.empty) {
@@ -113,7 +125,7 @@ const WaitlistForm = () => {
       await addDoc(usersRef, {
         email: email,
         referralCode: userReferralCode,
-        referredBy: referrerEmail ? hashEmail(referrerEmail) : null,
+        referredBy: referrerEmail || null, // Store actual referrer email
         referralCount: 0,
         verificationCode: verificationCode,
         verified: false,
@@ -131,6 +143,24 @@ const WaitlistForm = () => {
       setTimeout(() => {
         navigate(`/verify?email=${encodeURIComponent(email)}`);
       }, 2000);
+
+      // ✅ Increment referrer's referralCount and add 25 points
+      if (referrerEmail) {
+        const refQuery = query(usersRef, where("email", "==", referrerEmail));
+        const refSnapshot = await getDocs(refQuery);
+
+        if (!refSnapshot.empty) {
+          const referrerDoc = refSnapshot.docs[0];
+          const referrerData = referrerDoc.data();
+
+          await updateDoc(doc(db, "users", referrerDoc.id), {
+            referralCount: (referrerData.referralCount || 0) + 1,
+            points: (referrerData.points || 0) + 25,
+          });
+
+          console.log(`Updated referral count and added 25 points for ${referrerEmail}`);
+        }
+      }
     } catch (error) {
       console.error("Error adding user:", error);
       toast.error("❌ An error occurred. Please try again.", {
@@ -156,7 +186,6 @@ const WaitlistForm = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              disabled={email !== ""} // Prevents manual input if auto-filled
             />
           </div>
           <button type="submit" className="waitlist-button btn btn-glow w-100">Join the Waitlist</button>

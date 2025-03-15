@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { db } from "../firebase";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc, increment } from "firebase/firestore";
 import { FaRegCopy } from "react-icons/fa"; // Copy icon
 import { FaWhatsapp, FaTelegramPlane, FaTwitter } from "react-icons/fa"; // Social Icons
 import { ToastContainer, toast } from "react-toastify"; // Toast notifications
 import "react-toastify/dist/ReactToastify.css"; // Toast styles
-import './ReferralSection.css';
+import "./ReferralSection.css";
+
 function ReferralSection({ user }) {
   const [referralLink, setReferralLink] = useState("");
   const [referralCount, setReferralCount] = useState(0);
@@ -18,7 +19,7 @@ Step into a world of decentralized finance, exclusive rewards, and limitless opp
 ✅ Exclusive early rewards for members
 ✅ A dynamic community shaping the future
 
-🔗 Join now and claim your spot! ${referralLink}`; // Wrapped in quotes
+🔗 Join now and claim your spot! ${referralLink}`;
 
   useEffect(() => {
     const fetchReferralData = async () => {
@@ -26,20 +27,42 @@ Step into a world of decentralized finance, exclusive rewards, and limitless opp
         try {
           const userRef = doc(db, "users", user.id);
           const userSnap = await getDoc(userRef);
-          
+
           if (userSnap.exists()) {
             const userData = userSnap.data();
-            const refCode = userData.referralCode || "";
-            const link = `${window.location.origin}/signup?ref=${refCode}`;
-            setReferralLink(link);
+            setReferralCount(userData.referralCount || 0);
+            setReferralLink(`${window.location.origin}/signup?ref=${userData.referralCode || ""}`);
           }
         } catch (error) {
           console.error("Error fetching referral data:", error);
         }
       }
     };
+
     fetchReferralData();
   }, [user]);
+
+  const handleReferralSignup = async (referrerId) => {
+    try {
+      const referrerRef = doc(db, "users", referrerId);
+  
+      // ✅ Update referrer's referral count and add 25 points
+      await updateDoc(referrerRef, {
+        referralCount: increment(1),
+        points: increment(25), 
+      });
+  
+      // ✅ Fetch updated data to reflect changes in the UI
+      const updatedReferrerSnap = await getDoc(referrerRef);
+      const updatedReferrerData = updatedReferrerSnap.data();
+      
+      // ✅ Update state so UI updates instantly
+      setReferralCount(updatedReferrerData.referralCount);
+    } catch (error) {
+      console.error("Error updating referrer points:", error);
+    }
+  };
+  
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(shareText)
@@ -82,7 +105,7 @@ Step into a world of decentralized finance, exclusive rewards, and limitless opp
               }
               className="share-btn"
             >
-              <FaWhatsapp size={20} color="#25D366" /> 
+              <FaWhatsapp size={20} color="#25D366" />
             </button>
             <button
               onClick={() =>

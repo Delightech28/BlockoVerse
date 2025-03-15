@@ -82,28 +82,30 @@ function Dashboard() {
 
   const handleCheckIn = async () => {  
     const now = new Date().getTime();  
-    const nextCheckIn = lastCheckIn ? new Date(lastCheckIn).getTime() + 24 * 60 * 60 * 1000 : 0;  
-
-    if (now < nextCheckIn) {  
-      toast.warning("⏳ You can check in again after the countdown ends.", { autoClose: 3000, theme: "colored" });
-      return;  
-    }  
-
+    const lastCheckInTime = lastCheckIn ? new Date(lastCheckIn).getTime() : 0;
+    let pointsToAdd = 10;  // Default to 10 points if they missed a day.
+  
+    if (lastCheckInTime && (now - lastCheckInTime) <= 24 * 60 * 60 * 1000) {
+      // If checked in within 24 hours, continue streak with additional 10 points
+      pointsToAdd = 10;
+    }
+  
     try {  
       const userRef = doc(db, "users", user.id);  
       await updateDoc(userRef, {  
-        points: points + 5,  
+        points: points + pointsToAdd,  // Keep total points, just add check-in reward
         lastCheckIn: new Date().toISOString()  
       });  
-
-      setPoints(prevPoints => prevPoints + 5);  
+  
+      setPoints(prevPoints => prevPoints + pointsToAdd);  
       setLastCheckIn(new Date().toISOString());  
-      toast.success("🎉 Check-in successful! +5 points added.", { autoClose: 3000, theme: "colored" });
+      toast.success(`🎉 Check-in successful! +${pointsToAdd} points added.`, { autoClose: 3000, theme: "colored" });
     } catch (error) {  
       console.error("Error updating check-in:", error);  
       toast.error("❌ Check-in failed. Please try again.", { autoClose: 3000, theme: "colored" });
     }  
-  };  
+  };
+  
 
   if (loading) return <p>Loading...</p>;  
 

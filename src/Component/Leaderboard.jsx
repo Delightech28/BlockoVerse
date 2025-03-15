@@ -20,13 +20,13 @@ function Leaderboard() {
           const userData = doc.data();
           usersData.push({
             email: userData.email,
-            referralCount: userData.referralCount || 0,
+            points: userData.points || 0, // Ensure points are correctly pulled from Firestore
             referralCode: userData.referralCode || "",
           });
         });
 
-        // Sort users by referral count in descending order
-        usersData.sort((a, b) => b.referralCount - a.referralCount);
+        // Sort users by points in descending order
+        usersData.sort((a, b) => b.points - a.points);
         setTopUsers(usersData.slice(0, 10)); // Show only top 10
 
         // Fetch referrals history for the current user
@@ -75,14 +75,14 @@ function Leaderboard() {
 
   return (
     <div className="leaderboard-container">
-      <h2 className="text-primary">🏆 Top Referrers</h2>
+      <h2 className="text-primary">🏆 Leaderboard</h2>
       <div className="table-responsive">
         <table className="table table-striped table-bordered">
           <thead className="table-primary">
             <tr>
               <th>Rank</th>
               <th>Email</th>
-              <th>Referrals</th>
+              <th>Points</th>
             </tr>
           </thead>
           <tbody>
@@ -91,43 +91,19 @@ function Leaderboard() {
                 <tr key={index}>
                   <td>{index + 1}</td>
                   <td>{maskEmail(user.email)}</td>
-                  <td>{user.referralCount}</td>
+                  <td>{user.points}</td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan="3">No referrals yet.</td>
+                <td colSpan="3">No points yet.</td>
               </tr>
             )}
           </tbody>
         </table>
       </div>
 
-      <h2 className="text-success mt-4">📜 Referral History</h2>
-      <div className="table-responsive">
-        <table className="table table-striped table-bordered">
-          <thead className="table-success">
-            <tr>
-              <th>Email</th>
-              <th>Joined Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            {referralHistory.length > 0 ? (
-              referralHistory.map((referral, index) => (
-                <tr key={index}>
-                  <td>{maskEmail(referral.email)}</td>
-                  <td>{referral.joinedAt}</td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="2">No referrals found.</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+     
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { doc, getDocs, query, where, deleteDoc, collection, updateDoc, addDoc } from "firebase/firestore";
+import { doc, getDocs, query, where, deleteDoc, collection, updateDoc, setDoc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { db } from "../firebase";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
@@ -104,45 +104,57 @@ const WaitlistForm = () => {
     try {
       const usersRef = collection(db, "users");
       const userQuery = query(usersRef, where("email", "==", email.trim().toLowerCase()));
-      const userSnapshot = await getDocs(userQuery);
+const userSnapshot = await getDocs(userQuery);
 
-      if (!userSnapshot.empty) {
-        toast.warning("⚠️ You are already registered! Redirecting to dashboard...", {
-          position: "top-right",
-          autoClose: 3000,
-          theme: "colored",
-        });
+if (!userSnapshot.empty) {
+  const existingUser = userSnapshot.docs[0].data();
 
-        setTimeout(() => {
-          navigate(`/dashboard?email=${encodeURIComponent(email)}`);
-        }, 2000);
-        return;
-      }
+  if (existingUser.verified) {
+    // ✅ Prevent resending verification to verified users
+    toast.warning("⚠️ You are already registered! Redirecting to dashboard...", {
+      position: "top-right",
+      autoClose: 3000,
+      theme: "colored",
+    });
 
-      const userReferralCode = generateReferralCode();
-      const verificationCode = Math.floor(100000 + Math.random() * 900000);
+    setTimeout(() => {
+      navigate(`/dashboard?email=${encodeURIComponent(email)}`);
+    }, 2000);
+    return;
+  } else {
+    // ✅ Prevent duplicate entries but resend verification if not verified
+    toast.info("📩 Resending your verification code...");
+    sendVerificationEmail(email, existingUser.verificationCode);
+    return;  // ❗ Ensure the function stops here
+  }
+}
 
-      await addDoc(usersRef, {
-        email: email,
-        referralCode: userReferralCode,
-        referredBy: referrerEmail || null, // Store actual referrer email
-        referralCount: 0,
-        verificationCode: verificationCode,
-        verified: false,
-        points: 0,
-      });
+// ✅ If the user does not exist, add them to Firestore
+const userReferralCode = generateReferralCode();
+const verificationCode = Math.floor(100000 + Math.random() * 900000);
 
-      sendVerificationEmail(email, verificationCode);
+await setDoc(doc(db, "users", email.trim().toLowerCase()), {
+  email: email.trim().toLowerCase(),
+  referralCode: userReferralCode,
+  referredBy: referrerEmail || null,
+  referralCount: 0,
+  verificationCode: verificationCode,
+  verified: false,
+  points: 0,
+});
 
-      toast.success("🎉 Success! You have joined the waitlist. Check your email for verification.", {
-        position: "top-right",
-        autoClose: 3000,
-        theme: "colored",
-      });
+sendVerificationEmail(email, verificationCode);
 
-      setTimeout(() => {
-        navigate(`/verify?email=${encodeURIComponent(email)}`);
-      }, 2000);
+toast.success("🎉 Success! You have joined the waitlist. Check your email for verification.", {
+  position: "top-right",
+  autoClose: 3000,
+  theme: "colored",
+});
+
+setTimeout(() => {
+  navigate(`/verify?email=${encodeURIComponent(email)}`);
+}, 2000);
+
 
       // ✅ Increment referrer's referralCount and add 25 points
       if (referrerEmail) {

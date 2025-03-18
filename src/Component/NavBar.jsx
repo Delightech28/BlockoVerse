@@ -28,7 +28,7 @@ const NavBar = () => {
     <nav className="navbar navbar-expand-lg navbar-dark">
       <div className="container">
         <Link className="navbar-brand" to="/">
-          Blockoverse
+          DefiNexus
         </Link>
         <button className="navbar-toggler" type="button" onClick={toggleMenu}>
           <i className={`bi ${isOpen ? "bi-x" : "bi-list"}`} style={{ fontSize: "36px" }}></i>
@@ -39,7 +39,7 @@ const NavBar = () => {
               <Link className="nav-link" to="/dashboard" onClick={closeMenu}>Home</Link>
             </li>
             <li className="nav-item">
-              <Link className="nav-link" to="/tasks" onClick={closeMenu}>Tasks</Link>
+              <Link className="nav-link" to="/TaskSubmission" onClick={closeMenu}>Tasks</Link>
             </li>
             <li className="nav-item">
               <Link className="nav-link" to="/rewards" onClick={closeMenu}>Rewards</Link>
@@ -50,13 +50,7 @@ const NavBar = () => {
             <li className="nav-item">
               <Link className="nav-link" to="/nft" onClick={closeMenu}>NFT</Link>
             </li>
-            {email && (
-              <li className="nav-item">
-                <Link className="nav-link" to="/profile" onClick={closeMenu}>
-                  <FaUserCircle size={20} style={{ marginRight: "5px" }} /> Profile
-                </Link>
-              </li>
-            )}
+           
           </ul>
         </div>
       </div>

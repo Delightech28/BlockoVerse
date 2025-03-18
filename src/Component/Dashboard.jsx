@@ -21,51 +21,58 @@ function Dashboard() {
     const fetchUser = async () => {  
       const params = new URLSearchParams(window.location.search);  
       const email = params.get("email") || localStorage.getItem("userEmail");  
-
+  
       if (!email) {  
-        toast.warning("⚠️ No email found, redirecting...", { autoClose: 3000, theme: "colored" });
+        toast.warning("⚠️ No email found, redirecting...");
         navigate("/register");  
         return;  
       }  
-
+  
       try {  
         const q = query(collection(db, "users"), where("email", "==", email));  
         const querySnapshot = await getDocs(q);  
-
-        if (!querySnapshot.empty) {  
-          const userData = querySnapshot.docs[0].data();  
-          const userId = querySnapshot.docs[0].id;  
-
-          if (!userData.verified) {  
-            toast.error("❌ User not verified. Redirecting...", { autoClose: 3000, theme: "colored" });
-            navigate(`/verify?email=${email}`);  
-          } else {  
-            setUser({ ...userData, id: userId });  
-            setPoints(userData.points || 0);  
-            setLastCheckIn(userData.lastCheckIn || null);  
-            localStorage.setItem("userEmail", email);
-          }  
+  
+        if (!querySnapshot.empty) {
+          const userData = querySnapshot.docs[0].data();
+          const userId = querySnapshot.docs[0].id;
+          const fullUserData = { ...userData, id: userId };
+  
+          // 🔹 Handle verification before saving user
+          if (!userData.verified) {
+            toast.error("❌ User not verified. Redirecting...");
+            navigate(`/verify?email=${email}`);
+            return;
+          }
+  
+          // ✅ Save user in localStorage
+          localStorage.setItem("user", JSON.stringify(fullUserData)); 
+          setUser(fullUserData);
+  
+          // ✅ Ensure points are set properly
+          setPoints(userData.points || 0);
+          setLastCheckIn(userData.lastCheckIn || null);
         } else {  
-          toast.warning("⚠️ User not found, redirecting...", { autoClose: 3000, theme: "colored" });
+          toast.warning("⚠️ User not found, redirecting...");
           navigate("/register");  
         }  
       } catch (error) {  
-        console.error("Error fetching user:", error);  
-        toast.error("❌ Error loading user data.", { autoClose: 3000, theme: "colored" });
-      } finally {  
-        setLoading(false);  
-      }  
-    };  
+        console.error("❌ Error fetching user:", error);
+      } finally {
+        setLoading(false); // ✅ Set loading to false after fetching
+      }
+    };
+  
     fetchUser();  
   }, [navigate]);  
+  
 
   useEffect(() => {  
     if (lastCheckIn) {  
-      const interval = setInterval(() => {  
-        const now = new Date().getTime();  
-        const nextCheckIn = new Date(lastCheckIn).getTime() + 24 * 60 * 60 * 1000;  
-        const diff = nextCheckIn - now;  
-
+      const updateCountdown = () => {
+        const now = new Date().getTime();
+        const nextCheckIn = new Date(lastCheckIn).getTime() + 24 * 60 * 60 * 1000;
+        const diff = nextCheckIn - now;
+  
         if (diff > 0) {  
           const hours = Math.floor(diff / (1000 * 60 * 60));  
           const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));  
@@ -74,11 +81,18 @@ function Dashboard() {
         } else {  
           setCountdown("00:00:00");  
         }  
-      }, 1000);  
-
+      };
+  
+      // Call immediately to prevent delay
+      updateCountdown();
+      
+      // Update every second
+      const interval = setInterval(updateCountdown, 1000);
+      
       return () => clearInterval(interval);  
     }  
   }, [lastCheckIn]);  
+  
 
   const handleCheckIn = async () => {  
     const now = new Date().getTime();  
@@ -117,7 +131,7 @@ function Dashboard() {
         {user ? (  
           <div className="dashboard-content">
 
-            <p><strong>Points:</strong> <span className="points-text">{points}</span></p>  
+            <p><strong>$DNX</strong> <span className="points-text">{points}</span></p>  
             
             <button 
               className={`check-in-btn ${countdown === "00:00:00" ? "active" : "inactive"}`} 

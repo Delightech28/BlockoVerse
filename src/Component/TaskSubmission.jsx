@@ -2,9 +2,10 @@ import React, { useEffect, useState } from "react";
 import { getDocs, doc, updateDoc, getDoc } from "firebase/firestore";
 import { db, tasksCollection } from "../firebase";
 import { toast } from "react-toastify";
-import { FaCoins, FaTwitter, FaYoutube, FaInstagram, FaFacebook, FaUserFriends, FaCheckCircle, FaDiscord, FaTelegram, FaReddit } from "react-icons/fa";
+import { FaCoins, FaTwitter, FaYoutube, FaInstagram, FaFacebook, FaUserFriends, FaCheckCircle, FaDiscord, FaTelegram, FaReddit, FaArrowLeft  } from "react-icons/fa";
 import { BsChevronRight } from "react-icons/bs";
 import "./TaskSubmission.css";
+import { useNavigate } from "react-router-dom";
 
 const TaskSubmission = () => {
   const [user, setUser] = useState(null);
@@ -120,10 +121,15 @@ const TaskSubmission = () => {
         return null;
     }
   };
-  
+   const navigate = useNavigate();
+
   return (
     <div className="d-flex justify-content-center align-items-center min-vh-100">
       <div className="task-container">
+           
+      <a href="Dashboard" style={{ cursor: "pointer" }} className="back-arrow">
+        <FaArrowLeft size={24} />
+      </a>
         <h4 className="task-title">📋 Tasks List</h4>
 
         <div className="toggle-container">

@@ -27,7 +27,7 @@ const NavBar = () => {
   return (
     <nav className="navbar navbar-expand-lg navbar-dark">
       <div className="container">
-        <Link className="navbar-brand" to="/">
+        <Link className="navbar-brand" to="/dashboard">
           DefiNexus
         </Link>
         <button className="navbar-toggler" type="button" onClick={toggleMenu}>
@@ -36,7 +36,8 @@ const NavBar = () => {
         <div className={`collapse navbar-collapse ${isOpen ? "show" : ""}`}>
           <ul className="navbar-nav ms-auto">
             <li className="nav-item">
-              <Link className="nav-link" to="/dashboard" onClick={closeMenu}>Home</Link>
+            <Link className="nav-link" to="/dashboard" onClick={closeMenu}>Home</Link>
+
             </li>
             <li className="nav-item">
               <Link className="nav-link" to="/TaskSubmission" onClick={closeMenu}>Tasks</Link>
